@@ -1,11 +1,66 @@
 #!/usr/bin/env bash
 set -e
 
+# Default configuration
+DRY_RUN=false
+
+# Parse command line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            echo "Usage: $(basename "$0") [OPTIONS] [DAYS]"
+            echo "Clean up unnecessary macOS files."
+            echo ""
+            echo "Options:"
+            echo "    -h, --help      Show this help message"
+            echo "    -d, --dry-run   Show what would be deleted without deleting"
+            echo ""
+            echo "Arguments:"
+            echo "    DAYS            Number of days of cache to keep (default: 7)"
+            exit 0
+            ;;
+        -d|--dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        *)
+            DAYS_TO_KEEP=$1
+            shift
+            ;;
+    esac
+done
+
 # Default to 7 days if no argument provided
-DAYS_TO_KEEP=${1:-7}
+DAYS_TO_KEEP=${DAYS_TO_KEEP:-7}
 
 echo "Requesting sudo permissions..."
 sudo -v
+
+if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would clean the following locations (files older than ${DAYS_TO_KEEP} days):"
+    echo "- System cache files in /Library/Caches/"
+    echo "- User cache files in ~/Library/Caches/"
+    echo "- System logs in /Library/Logs/"
+    echo "- User logs in ~/Library/Logs/"
+    echo "- Temporary files in /private/var/tmp/"
+    echo "- Temporary files in /tmp/"
+    echo "- Files in ~/.Trash/"
+    
+    if command -v brew >/dev/null 2>&1; then
+        echo -e "\nHomebrew dry run results:"
+        echo "Running: brew cleanup --dry-run --prune=${DAYS_TO_KEEP}"
+        brew cleanup --dry-run --prune=${DAYS_TO_KEEP}
+        
+        echo -e "\nRunning: brew autoremove --dry-run"
+        brew autoremove --dry-run
+        
+        echo -e "\nRunning: brew doctor"
+        brew doctor
+    else
+        echo "Homebrew is not installed, would skip brew cleanup"
+    fi
+    exit 0
+fi
 
 echo "Starting macOS selective cleanup (removing files older than ${DAYS_TO_KEEP} days)..."
 
