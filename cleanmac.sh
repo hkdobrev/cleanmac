@@ -27,10 +27,12 @@ echo "Clearing temporary files older than ${DAYS_TO_KEEP} days..."
 sudo find /private/var/tmp/* -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Skipped restricted files in system tmp."
 find /tmp/* -type f -mtime +${DAYS_TO_KEEP} ! -path "/tmp/tmp-mount-*" -exec rm {} \; -print 2>/dev/null || echo "Skipped restricted tmp files."
 
-echo "Running Homebrew cleanup and cache clearing..."
-brew cleanup --prune=${DAYS_TO_KEEP} || echo "Homebrew cleanup encountered an error."
-brew autoremove || echo "Homebrew autoremove encountered an error."
-brew doctor || echo "Homebrew doctor encountered an error."
+if command -v brew >/dev/null 2>&1; then
+    echo "Running Homebrew cleanup and cache clearing..."
+    brew cleanup --prune=${DAYS_TO_KEEP} || echo "Homebrew cleanup encountered an error."
+    brew autoremove || echo "Homebrew autoremove encountered an error."
+    brew doctor || echo "Homebrew doctor encountered an error."
+fi
 
 echo "Emptying Trash..."
 rm -rf ~/.Trash/* || echo "Error emptying Trash."
