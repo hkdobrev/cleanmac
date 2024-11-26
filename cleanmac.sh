@@ -71,7 +71,7 @@ sudo find /Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} \( ! -path "/Library
                                                ! -path "/Library/Caches/com.apple.iconservices.store" \) \
     -exec rm {} \; -print 2>/dev/null || echo "Skipped restricted files in system cache."
 
-find ~/Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print || echo "Error clearing user cache."
+find ~/Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} -exec sudo rm -f {} \; -print || echo "Error clearing user cache."
 
 echo "Removing application logs older than ${DAYS_TO_KEEP} days..."
 sudo find /Library/Logs -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Skipped restricted files in system logs."
