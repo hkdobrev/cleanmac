@@ -89,7 +89,8 @@ if command -v brew >/dev/null 2>&1; then
     brew doctor || echo "Homebrew doctor encountered an error."
 fi
 
-echo "Emptying Trash..."
-rm -rf ~/.Trash/* || echo "Error emptying Trash."
+echo "Emptying Trash (files older than ${DAYS_TO_KEEP} days)..."
+find ~/.Trash -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print || echo "Error cleaning Trash."
+find ~/.Trash -type d -empty -delete 2>/dev/null || echo "Error removing empty Trash directories."
 
 echo "Selective cleanup complete!"
