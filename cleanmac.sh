@@ -45,6 +45,11 @@ if [ "$DRY_RUN" = true ]; then
     echo "- Temporary files in /private/var/tmp/"
     echo "- Temporary files in /tmp/"
     echo "- Files in ~/.Trash/"
+    echo "- Safari cache and history older than ${DAYS_TO_KEEP} days"
+    echo "- XCode derived data and archives"
+    echo "- Node.js cache (npm, yarn)"
+    echo "- Docker unused images and containers"
+    echo "- System memory cache and swap"
     
     if command -v brew >/dev/null 2>&1; then
         echo -e "\nHomebrew dry run results:"
@@ -92,5 +97,34 @@ fi
 echo "Emptying Trash (files older than ${DAYS_TO_KEEP} days)..."
 find ~/.Trash -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print || echo "Error cleaning Trash."
 find ~/.Trash -type d -empty -delete 2>/dev/null || echo "Error removing empty Trash directories."
+
+echo "Cleaning Safari caches..."
+find ~/Library/Safari/LocalStorage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari LocalStorage."
+find ~/Library/Safari/WebKit/MediaCache -type f -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari MediaCache."
+
+echo "Cleaning XCode derived data..."
+rm -rf ~/Library/Developer/Xcode/DerivedData/* || echo "Error cleaning XCode derived data."
+rm -rf ~/Library/Developer/Xcode/Archives/* || echo "Error cleaning XCode archives."
+
+# Node.js cache cleaning
+if command -v npm >/dev/null 2>&1; then
+    echo "Cleaning npm cache..."
+    npm cache clean --force || echo "Error cleaning npm cache."
+fi
+
+if command -v yarn >/dev/null 2>&1; then
+    echo "Cleaning yarn cache..."
+    yarn cache clean || echo "Error cleaning yarn cache."
+fi
+
+# Docker cleanup
+if command -v docker >/dev/null 2>&1; then
+    echo "Cleaning unused Docker data..."
+    docker system prune -f || echo "Error cleaning Docker system."
+fi
+
+# System memory cleanup
+echo "Purging system memory cache..."
+sudo purge || echo "Error purging system memory."
 
 echo "Selective cleanup complete!"
