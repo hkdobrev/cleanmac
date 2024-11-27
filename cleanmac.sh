@@ -45,7 +45,7 @@ if [ "$DRY_RUN" = true ]; then
     echo "- Temporary files in /private/var/tmp/"
     echo "- Temporary files in /tmp/"
     echo "- Files in ~/.Trash/"
-    echo "- Safari cache and history older than ${DAYS_TO_KEEP} days"
+    echo "- Safari cache older than ${DAYS_TO_KEEP} days"
     echo "- Xcode derived data and archives"
     echo "- Node.js cache (npm, yarn)"
     echo "- Docker unused images and containers"
