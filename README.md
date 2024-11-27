@@ -16,7 +16,7 @@ Clean your macOS with a script, not an expensive app
 - Purges system memory cache
 - Supports dry-run mode to preview changes
 
-## Usage
+## Options
 ```shell
 Usage: cleanmac.sh [OPTIONS] [DAYS]
 
@@ -33,18 +33,14 @@ Arguments:
 ## Installation
 1. Clone the repository:
   ```shell
-  git clone https://github.com/yourusername/cleanmac.git
+  git clone https://github.com/hkdobrev/cleanmac.git
   ```
 2. Navigate to the script directory:
   ```shell
   cd cleanmac
   ```
-3. Make the script executable:
-  ```shell
-  chmod +x cleanmac.sh
-  ```
 
-## Examples
+## Usage
 - Run the script with default settings (7 days):
   ```shell
   ./cleanmac.sh
