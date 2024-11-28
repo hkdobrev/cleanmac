@@ -33,6 +33,9 @@ done
 # Default to 7 days if no argument provided
 DAYS_TO_KEEP=${DAYS_TO_KEEP:-7}
 
+# Get initial disk space
+df -h / | awk 'NR==2 {print "Free storage: " $4 " / Total storage: " $2}'
+
 echo "Requesting sudo permissions..."
 sudo -v
 
@@ -130,5 +133,9 @@ fi
 # System memory cleanup
 echo "Purging system memory cache..."
 sudo purge || echo "Error purging system memory."
+
+# At the end, before the final message
+echo -e "\nAfter cleanup:"
+df -h / | awk 'NR==2 {print "Free storage: " $4 " / Total storage: " $2}'
 
 echo "Selective cleanup complete!"
