@@ -46,6 +46,7 @@ if [ "$DRY_RUN" = true ]; then
     echo "- Temporary files in /tmp/"
     echo "- Files in ~/.Trash/"
     echo "- Safari cache older than ${DAYS_TO_KEEP} days"
+    echo "- Spotify cache older than ${DAYS_TO_KEEP} days"
     echo "- Xcode derived data and archives"
     echo "- Node.js cache (npm, yarn)"
     echo "- Docker unused images and containers"
@@ -101,6 +102,9 @@ find ~/.Trash -type d -empty -delete 2>/dev/null || echo "Error removing empty T
 echo "Cleaning Safari caches..."
 find ~/Library/Safari/LocalStorage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari LocalStorage."
 find ~/Library/Safari/WebKit/MediaCache -type f -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari MediaCache."
+
+echo "Cleaning Spotify cache..."
+find ~/Library/Application\ Support/Spotify/PersistentCache/Storage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Spotify cache."
 
 echo "Cleaning Xcode derived data..."
 rm -rf ~/Library/Developer/Xcode/DerivedData/* || echo "Error cleaning Xcode derived data."
