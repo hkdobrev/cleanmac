@@ -33,6 +33,14 @@ done
 # Default to 7 days if no argument provided
 DAYS_TO_KEEP=${DAYS_TO_KEEP:-7}
 
+# Get initial disk space
+free_storage=$(df -k / | awk 'NR==2 {print $4}')
+total_storage=$(df -k / | awk 'NR==2 {print $2}')
+free_storage_gb=$(echo "scale=2; $free_storage / 1024 / 1024" | bc)
+total_storage_gb=$(echo "scale=2; $total_storage / 1024 / 1024" | bc)
+
+echo "Free storage: $free_storage_gb Gi / Total storage: $total_storage_gb Gi"
+
 echo "Requesting sudo permissions..."
 sudo -v
 
@@ -130,5 +138,38 @@ fi
 # System memory cleanup
 echo "Purging system memory cache..."
 sudo purge || echo "Error purging system memory."
+
+# At the end, before the final message
+echo -e "\nAfter cleanup:"
+
+# Get disk space
+free_storage_final=$(df -k / | awk 'NR==2 {print $4}')
+total_storage_final=$(df -k / | awk 'NR==2 {print $2}')
+free_storage_final_gb=$(echo "scale=2; $free_storage_final / 1024 / 1024" | bc)
+total_storage_final_gb=$(echo "scale=2; $total_storage_final / 1024 / 1024" | bc)
+
+echo "Free storage: $free_storage_final_gb Gi / Total storage: $total_storage_final_gb Gi"
+
+# Calculate the difference in kilobytes
+free_storage_diff_kb=$((free_storage_final - free_storage))
+
+# If the difference is negative, set it to 0
+if [ "$free_storage_diff_kb" -lt 0 ]; then
+    free_storage_diff_kb=0
+fi
+
+# Determine appropriate unit for the difference
+if [ "$free_storage_diff_kb" -ge $((1024 * 1024)) ]; then
+    # Convert difference to gigabytes if >= 1 Gi
+    free_storage_diff_gb=$(echo "scale=2; $free_storage_diff_kb / 1024 / 1024" | bc)
+    echo "Space freed: $free_storage_diff_gb Gi"
+elif [ "$free_storage_diff_kb" -ge 1024 ]; then
+    # Convert difference to megabytes if >= 1 Mi but < 1 Gi
+    free_storage_diff_mb=$(echo "scale=2; $free_storage_diff_kb / 1024" | bc)
+    echo "Space freed: $free_storage_diff_mb Mi"
+else
+    # Output difference in kilobytes if < 1 Mi
+    echo "Space freed: $free_storage_diff_kb Ki"
+fi
 
 echo "Selective cleanup complete!"
