@@ -33,6 +33,12 @@ done
 # Default to 7 days if no argument provided
 DAYS_TO_KEEP=${DAYS_TO_KEEP:-7}
 
+# Check that the number of days to keep is a positive integer
+if ! [[ $DAYS_TO_KEEP =~ ^(0|[1-9][0-9]*)$ ]]; then
+    echo "Error: DAYS must be a positive integer."
+    exit 1
+fi
+
 # Get initial disk space
 free_storage=$(df -k / | awk 'NR==2 {print $4}')
 total_storage=$(df -k / | awk 'NR==2 {print $2}')
