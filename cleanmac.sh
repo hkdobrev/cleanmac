@@ -34,7 +34,7 @@ done
 DAYS_TO_KEEP=${DAYS_TO_KEEP:-7}
 
 # Check that the number of days to keep is a positive integer
-if ! [[ $DAYS_TO_KEEP =~ ^[0-9]+$ ]]; then
+if ! [[ $DAYS_TO_KEEP =~ ^[1-9][0-9]*$ ]]; then
     echo "Error: DAYS must be a positive integer."
     exit 1
 fi
