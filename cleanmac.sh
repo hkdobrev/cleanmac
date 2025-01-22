@@ -137,8 +137,22 @@ fi
 
 # Docker cleanup
 if command -v docker >/dev/null 2>&1; then
-    echo "Cleaning unused Docker data..."
-    docker system prune -f || echo "Error cleaning Docker system."
+    echo "Checking Docker context..."
+    if ! current_context=$(docker context show 2>/dev/null); then
+        echo "Unable to determine Docker context; assuming local and cleaning."
+        docker system prune -f || echo "Error cleaning Docker system."
+    else
+        if endpoint=$(docker context inspect "$current_context" --format '{{.Endpoints.docker.Host}}' 2>/dev/null); then
+            if [[ "$endpoint" == unix://* ]]; then
+                echo "Cleaning unused Docker data..."
+                docker system prune -f || echo "Error cleaning Docker system."
+            else
+                echo "Docker is using a remote context ($endpoint), skipping cleanup."
+            fi
+        else
+            echo "Unable to inspect Docker context; skipping cleanup to avoid potential remote connection."
+        fi
+    fi
 fi
 
 # System memory cleanup
