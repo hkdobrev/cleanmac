@@ -85,17 +85,19 @@ fi
 echo "Starting macOS selective cleanup (removing files older than ${DAYS_TO_KEEP} days)..."
 
 echo "Clearing system and user cache files older than ${DAYS_TO_KEEP} days..."
-sudo find /Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} \( ! -path "/Library/Caches/com.apple.amsengagementd.classicdatavault" \
-                                               ! -path "/Library/Caches/com.apple.aned" \
-                                               ! -path "/Library/Caches/com.apple.aneuserd" \
-                                               ! -path "/Library/Caches/com.apple.iconservices.store" \) \
+sudo find /Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} \
+    \( ! -path "/Library/Caches/com.apple.amsengagementd.classicdatavault" \
+       ! -path "/Library/Caches/com.apple.aned" \
+       ! -path "/Library/Caches/com.apple.aneuserd" \
+       ! -path "/Library/Caches/com.apple.iconservices.store" \) \
     -exec rm {} \; -print 2>/dev/null || echo "Skipped restricted files in system cache."
 
-find ~/Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} -exec sudo rm -f {} \; -print || echo "Error clearing user cache."
+find ~/Library/Caches/* -type f -mtime +${DAYS_TO_KEEP} \
+    -exec rm -f {} \; -print 2>/dev/null || echo "Error clearing user cache."
 
 echo "Removing application logs older than ${DAYS_TO_KEEP} days..."
 sudo find /Library/Logs -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Skipped restricted files in system logs."
-find ~/Library/Logs -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print || echo "Error clearing user logs."
+find ~/Library/Logs -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error clearing user logs."
 
 # Clear Temporary Files (Only files older than ${DAYS_TO_KEEP} days), excluding restricted files in /tmp
 echo "Clearing temporary files older than ${DAYS_TO_KEEP} days..."
@@ -110,15 +112,26 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 echo "Emptying Trash (files older than ${DAYS_TO_KEEP} days)..."
-find ~/.Trash -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print || echo "Error cleaning Trash."
+# Suppress SIP errors
+find ~/.Trash -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Trash."
 find ~/.Trash -type d -empty -delete 2>/dev/null || echo "Error removing empty Trash directories."
 
 echo "Cleaning Safari caches..."
-find ~/Library/Safari/LocalStorage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari LocalStorage."
-find ~/Library/Safari/WebKit/MediaCache -type f -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari MediaCache."
+# Skip when Safari running
+if ! pgrep -x "Safari" >/dev/null; then
+    find ~/Library/Safari/LocalStorage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari LocalStorage."
+    find ~/Library/Safari/WebKit/MediaCache -type f -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Safari MediaCache."
+else
+    echo "Safari running — skipping Safari cleanup."
+fi
 
 echo "Cleaning Spotify cache..."
-find ~/Library/Application\ Support/Spotify/PersistentCache/Storage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Spotify cache."
+# Skip when Spotify running
+if ! pgrep -x "Spotify" >/dev/null; then
+    find ~/Library/Application\ Support/Spotify/PersistentCache/Storage -type f -mtime +${DAYS_TO_KEEP} -exec rm {} \; -print 2>/dev/null || echo "Error cleaning Spotify cache."
+else
+    echo "Spotify running — skipping Spotify cleanup."
+fi
 
 echo "Cleaning Xcode derived data..."
 rm -rf ~/Library/Developer/Xcode/DerivedData/* || echo "Error cleaning Xcode derived data."
@@ -138,20 +151,11 @@ fi
 # Docker cleanup
 if command -v docker >/dev/null 2>&1; then
     echo "Checking Docker context..."
-    if ! current_context=$(docker context show 2>/dev/null); then
-        echo "Unable to determine Docker context; assuming local and cleaning."
+    # Prune only if daemon is running
+    if docker info >/dev/null 2>&1; then
         docker system prune -f || echo "Error cleaning Docker system."
     else
-        if endpoint=$(docker context inspect "$current_context" --format '{{.Endpoints.docker.Host}}' 2>/dev/null); then
-            if [[ "$endpoint" == unix://* ]]; then
-                echo "Cleaning unused Docker data..."
-                docker system prune -f || echo "Error cleaning Docker system."
-            else
-                echo "Docker is using a remote context ($endpoint), skipping cleanup."
-            fi
-        else
-            echo "Unable to inspect Docker context; skipping cleanup to avoid potential remote connection."
-        fi
+        echo "Docker daemon not running; skipping cleanup."
     fi
 fi
 
