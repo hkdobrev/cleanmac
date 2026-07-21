@@ -1,10 +1,14 @@
-# cleanmac
+# Use [Mole](https://github.com/tw93/Mole) instead which is much better and well supported
+
+### cleanmac
+> ⚠️ *Archived*, use https://github.com/tw93/Mole instead.
+
 Clean your macOS with a script, not an expensive app
 
-## Overview
+#### Overview
 `cleanmac.sh` is a shell script designed to help you clean up unnecessary files on your macOS system. It removes cache files, logs, temporary files, and more, freeing up valuable disk space and improving system performance.
 
-## Features
+#### Features
 - Removes system and user cache files
 - Cleans application logs
 - Clears temporary files
@@ -16,7 +20,7 @@ Clean your macOS with a script, not an expensive app
 - Purges system memory cache
 - Supports dry-run mode to preview changes
 
-## Options
+#### Options
 ```shell
 Usage: cleanmac.sh [OPTIONS] [DAYS]
 
@@ -30,7 +34,7 @@ Arguments:
   DAYS            Number of days of cache to keep (default: 7)
 ```
 
-## Installation
+#### Installation
 1. Clone the repository:
   ```shell
   git clone https://github.com/hkdobrev/cleanmac.git
@@ -40,7 +44,7 @@ Arguments:
   cd cleanmac
   ```
 
-## Usage
+#### Usage
 - Run the script with default settings (7 days):
   ```shell
   ./cleanmac.sh
@@ -54,9 +58,9 @@ Arguments:
   ./cleanmac.sh --dry-run
   ```
 
-## Contributing
+#### Contributing
 Contributions are welcome! Please open an issue or submit a pull request on GitHub.
 
-## License
+#### License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 Clean your macOS with a script, not an expensive app
